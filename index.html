@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Audit — Adil Hussain</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,600&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #272422;
+    --surface:   #302d2a;
+    --surface2:  #383430;
+    --border:    #4a4540;
+    --border2:   #5a5550;
+    --text:      #c8c3b8;
+    --text-dim:  #9a9590;
+    --text-muted:#6e6a65;
+    --white:     #ede8e0;
+    --accent:    #d4cfc7;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lora', serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* grain overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .wrap {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    padding: 28px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    animation: rise 0.5s ease both;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .topbar-name {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+    letter-spacing: 0.01em;
+  }
+
+  .topbar-sep { width: 1px; height: 14px; background: var(--border2); }
+
+  .topbar-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .topbar-links { display: flex; gap: 16px; }
+
+  .topbar-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.15s;
+  }
+
+  .topbar-links a:hover { color: var(--white); }
+
+  /* ── AVAILABILITY BANNER ── */
+  .avail-banner {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 11px 0;
+    animation: rise 0.5s ease 0.05s both;
+  }
+
+  .avail-inner { display: flex; align-items: center; gap: 10px; }
+
+  .avail-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #6dbf7e;
+    flex-shrink: 0;
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.35; }
+  }
+
+  .avail-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.07em;
+  }
+
+  .avail-text strong { color: var(--text); font-weight: 500; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 72px 0 60px;
+    border-bottom: 1px solid var(--border);
+    animation: rise 0.6s ease 0.1s both;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .eyebrow::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: var(--border2);
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(46px, 8.5vw, 80px);
+    font-weight: 900;
+    line-height: 1.0;
+    color: var(--white);
+    letter-spacing: -0.02em;
+    margin-bottom: 28px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .hero-body {
+    font-size: 18px;
+    color: var(--text);
+    max-width: 500px;
+    line-height: 1.8;
+    margin-bottom: 16px;
+    font-family: 'Lora', serif;
+  }
+
+  .hero-body strong { color: var(--white); font-weight: 500; }
+
+  /* trust bar */
+  .trust-bar {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .trust-item {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .trust-item::before {
+    content: '✓';
+    color: var(--accent);
+    font-size: 10px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn-primary {
+    display: inline-block;
+    background: var(--white);
+    color: var(--bg);
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    padding: 16px 38px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .btn-sub {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 14px;
+    letter-spacing: 0.07em;
+  }
+
+  /* ── SIGNAL ── */
+  .signal {
+    margin: 56px 0;
+    padding: 32px 36px;
+    background: var(--surface);
+    border-left: 2px solid var(--border2);
+    animation: rise 0.6s ease 0.15s both;
+  }
+
+  .signal-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+  }
+
+  .signal-text {
+    font-family: 'Lora', serif;
+    font-size: 16px;
+    color: var(--text);
+    line-height: 1.9;
+  }
+
+  .signal-text em {
+    font-style: italic;
+    color: var(--white);
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+    animation: rise 0.6s ease 0.2s both;
+  }
+
+  .section-eye {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-eye::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(30px, 5.5vw, 46px);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 36px;
+  }
+
+  h2 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--text-dim);
+  }
+
+  /* ── PROBLEM LIST ── */
+  .prob-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+
+  .prob-list li {
+    background: var(--surface);
+    padding: 20px 24px;
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.75;
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 16px;
+    align-items: start;
+    transition: background 0.15s;
+  }
+
+  .prob-list li:hover { background: var(--surface2); }
+
+  .prob-list li::before {
+    content: '→';
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-top: 3px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── PROOF CARD ── */
+  .proof-card {
+    background: var(--surface);
+    padding: 32px;
+    border-left: 2px solid var(--text-dim);
+    margin-top: 40px;
+  }
+
+  .proof-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .proof-text {
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.9;
+    font-style: italic;
+    margin-bottom: 24px;
+  }
+
+  .proof-result {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .proof-stat { display: flex; flex-direction: column; gap: 5px; }
+
+  .proof-stat-num {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .proof-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ── OUTCOMES ── */
+  .outcome-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 8px;
+  }
+
+  .outcome-card {
+    background: var(--surface);
+    padding: 28px 24px;
+    transition: background 0.15s;
+  }
+
+  .outcome-card:hover { background: var(--surface2); }
+
+  .outcome-n {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    margin-bottom: 14px;
+  }
+
+  .outcome-title {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+
+  .outcome-body {
+    font-family: 'Lora', serif;
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.75;
+  }
+
+  /* ── DELIVERABLES ── */
+  .deliv { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+
+  .deliv-item {
+    background: var(--surface);
+    padding: 28px 24px;
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 20px;
+    align-items: start;
+    transition: background 0.15s;
+  }
+
+  .deliv-item:hover { background: var(--surface2); }
+
+  .deliv-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    border: 1px solid var(--border2);
+    padding: 7px 0;
+    text-align: center;
+    letter-spacing: 0.07em;
+    margin-top: 3px;
+  }
+
+  .deliv-title {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .deliv-body {
+    font-family: 'Lora', serif;
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }
+
+  /* ── WHAT HAPPENS NEXT ── */
+  .next-steps { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+
+  .next-item {
+    background: var(--surface);
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 18px;
+    align-items: start;
+    transition: background 0.15s;
+  }
+
+  .next-item:hover { background: var(--surface2); }
+
+  .next-num {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--border2);
+    line-height: 1;
+    padding-top: 2px;
+  }
+
+  .next-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+
+  .next-body {
+    font-family: 'Lora', serif;
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }
+
+  /* ── TIMELINE ── */
+  .tl { display: flex; flex-direction: column; margin-top: 8px; position: relative; }
+
+  .tl::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 44px;
+    bottom: 44px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .tl-item {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 20px;
+    padding: 22px 0;
+    align-items: start;
+  }
+
+  .tl-dot {
+    width: 44px;
+    height: 44px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  .tl-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 6px;
+    padding-top: 10px;
+  }
+
+  .tl-body {
+    font-family: 'Lora', serif;
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }
+
+  /* ── PRICING ── */
+  .price-wrap {
+    margin-top: 8px;
+    background: var(--surface);
+    padding: 48px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .price-ghost {
+    position: absolute;
+    right: -10px;
+    bottom: -24px;
+    font-family: 'Fraunces', serif;
+    font-size: 150px;
+    font-weight: 900;
+    color: var(--surface2);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -0.04em;
+  }
+
+  .price-num {
+    font-family: 'Fraunces', serif;
+    font-size: 80px;
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 8px;
+    position: relative;
+    letter-spacing: -0.03em;
+  }
+
+  .price-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 36px;
+    position: relative;
+  }
+
+  .price-list { list-style: none; margin-bottom: 40px; position: relative; }
+
+  .price-list li {
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    color: var(--text);
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    line-height: 1.6;
+  }
+
+  .price-list li:last-child { border-bottom: none; }
+
+  .price-list li::before {
+    content: '✓';
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* ── FAQ ── */
+  .faq { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+
+  .faq-item { background: var(--surface); overflow: hidden; }
+
+  .faq-q {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 22px 24px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: background 0.15s;
+  }
+
+  .faq-q:hover { background: var(--surface2); }
+
+  .faq-q-text {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.4;
+  }
+
+  .faq-icon {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+    line-height: 1;
+  }
+
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+
+  .faq-item.open .faq-a { max-height: 300px; }
+
+  .faq-a-inner {
+    padding: 4px 24px 24px;
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.85;
+  }
+
+  /* ── NOT FOR YOU ── */
+  .nfy { list-style: none; display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+
+  .nfy li {
+    background: var(--surface);
+    padding: 18px 24px;
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    color: var(--text-dim);
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 16px;
+    line-height: 1.7;
+    transition: background 0.15s;
+  }
+
+  .nfy li::before {
+    content: '×';
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 1px;
+  }
+
+  /* ── FINAL CTA ── */
+  .final-cta {
+    padding: 72px 0 64px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    animation: rise 0.6s ease 0.3s both;
+  }
+
+  .final-cta h2 { text-align: center; margin-bottom: 16px; }
+
+  .final-cta p {
+    font-family: 'Lora', serif;
+    font-size: 17px;
+    color: var(--text);
+    max-width: 440px;
+    margin: 0 auto 40px;
+    line-height: 1.8;
+  }
+
+  .final-contact {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.07em;
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .final-contact a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .final-contact a:hover { color: var(--white); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 32px 0 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  footer p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+  }
+
+  .footer-links { display: flex; gap: 20px; }
+
+  .footer-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    transition: color 0.15s;
+  }
+
+  .footer-links a:hover { color: var(--white); }
+
+  /* ── ANIMATION ── */
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 560px) {
+    .outcome-grid { grid-template-columns: 1fr; }
+    .price-wrap { padding: 32px 24px; }
+    .deliv-item { grid-template-columns: 1fr; }
+    .deliv-tag { width: 52px; }
+    h1 { font-size: 44px; }
+    .trust-bar { gap: 14px; }
+    .topbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-name">Adil Hussain</span>
+      <div class="topbar-sep"></div>
+      <span class="topbar-title">7 years · Rails, Node, PHP · Live production systems</span>
+    </div>
+    <div class="topbar-links">
+      <a href="https://www.linkedin.com/in/adilhussain003" target="_blank">LinkedIn ↗</a>
+      <a href="mailto:adilhussain003@gmail.com">Email</a>
+    </div>
+  </div>
+
+  <!-- AVAILABILITY BANNER -->
+  <div class="avail-banner">
+    <div class="avail-inner">
+      <div class="avail-dot"></div>
+      <span class="avail-text"><strong>Currently accepting audits</strong> — 2 slots available this month</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <p class="eyebrow">Service · System Audit</p>
+    <h1>Your SaaS works.<br><em>Changing it</em><br>shouldn't feel risky.</h1>
+    <p class="hero-body">
+      Your product is live. Customers are paying. But every release feels heavier than it should.
+      <strong>This audit tells you exactly why. And what to fix first.</strong>
+    </p>
+    <div class="trust-bar">
+      <span class="trust-item">7 years on live production systems</span>
+      <span class="trust-item">Rails · Node.js · PHP</span>
+      <span class="trust-item">US & UK clients</span>
+      <span class="trust-item">Fixed price. No surprises.</span>
+    </div>
+    <a href="https://calendly.com/adilhussain003/saas-audit-call" class="btn-primary" target="_blank">
+      Book a Free 30-min Discovery Call
+    </a>
+    <span class="btn-sub">No pitch. No proposal deck. Just a conversation about your system.</span>
+  </div>
+
+  <!-- SIGNAL -->
+  <div class="signal">
+    <p class="signal-label">A Familiar Moment</p>
+    <p class="signal-text">
+      Someone asks: <em>"Can we change the price for one customer?"</em><br>
+      Simple request. Should take 5 minutes.<br>
+      The engineer goes quiet. Opens the code. Closes it.<br>
+      Comes back 20 minutes later: <em>"I need to check something."</em><br><br>
+      That pause is not a developer problem.<br>
+      It is a system ownership problem.<br>
+      And it gets more expensive every week it goes unaddressed.
+    </p>
+  </div>
+
+  <!-- PROBLEM -->
+  <div class="section">
+    <p class="section-eye">The Problem</p>
+    <h2>Nothing is broken.<br><em>Everything feels risky.</em></h2>
+    <ul class="prob-list">
+      <li>Releases that used to take hours now take days. Nobody can say what else a change will touch.</li>
+      <li>Simple requests keep getting postponed. Not because they are hard. Because the blast radius is unknown.</li>
+      <li>AI shipped the MVP fast. Now that same AI cannot tell you what is safe to change in what it built.</li>
+      <li>Revenue keeps coming in. But growth is quietly capping because the system cannot keep up with the roadmap.</li>
+      <li>Every new developer takes weeks just to understand what the system actually does.</li>
+    </ul>
+
+    <!-- PROOF — right when skepticism peaks -->
+    <div class="proof-card">
+      <p class="proof-label">Real Situation · US Legal Docs Business</p>
+      <p class="proof-text">
+        A US document business had been running on the same backend for years.
+        Two new forms had been blocked for months.
+        Every developer who tried ran into the same resistance.
+        Not errors. Just the feeling that touching this area pulled in more than expected.
+        Previous developers recommended a full rebuild.
+        I audited the system instead.
+        Those two forms represented $15,000 to $45,000 in annual revenue waiting to move.
+        We unblocked it without touching anything that was already working.
+      </p>
+      <div class="proof-result">
+        <div class="proof-stat">
+          <span class="proof-stat-num">$45k</span>
+          <span class="proof-stat-label">Revenue unblocked</span>
+        </div>
+        <div class="proof-stat">
+          <span class="proof-stat-num">0</span>
+          <span class="proof-stat-label">Features broken</span>
+        </div>
+        <div class="proof-stat">
+          <span class="proof-stat-num">No</span>
+          <span class="proof-stat-label">Full rebuild needed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="section">
+    <p class="section-eye">The Outcome</p>
+    <h2>What changes after<br>the audit.</h2>
+    <div class="outcome-grid">
+      <div class="outcome-card">
+        <p class="outcome-n">01 —</p>
+        <p class="outcome-title">You know what is actually fragile</p>
+        <p class="outcome-body">Not a guess. Not a feeling. The specific paths that carry risk. And the ones stable enough to change.</p>
+      </div>
+      <div class="outcome-card">
+        <p class="outcome-n">02 —</p>
+        <p class="outcome-title">A plan sequenced by impact</p>
+        <p class="outcome-body">Not "refactor everything." What to fix first. What to leave alone. Ordered by what unblocks revenue fastest.</p>
+      </div>
+      <div class="outcome-card">
+        <p class="outcome-n">03 —</p>
+        <p class="outcome-title">Blocked revenue starts moving</p>
+        <p class="outcome-body">Features stuck in "too risky" get a path to ship. Without touching what is already working.</p>
+      </div>
+      <div class="outcome-card">
+        <p class="outcome-n">04 —</p>
+        <p class="outcome-title">The team stops hesitating</p>
+        <p class="outcome-body">Decisions stop stalling. Deploys stop carrying invisible weight. The system starts feeling like something you own again.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELIVERABLES -->
+  <div class="section">
+    <p class="section-eye">What You Receive</p>
+    <h2>Three deliverables.<br>One clear picture.</h2>
+    <div class="deliv">
+      <div class="deliv-item">
+        <div class="deliv-tag">DOC</div>
+        <div>
+          <p class="deliv-title">Written Audit Report</p>
+          <p class="deliv-body">What your system actually is in production. Which revenue paths are fragile. What is blocking safe change. A prioritized list of what to fix first, sequenced by business impact. Not technical preference.</p>
+        </div>
+      </div>
+      <div class="deliv-item">
+        <div class="deliv-tag">VID</div>
+        <div>
+          <p class="deliv-title">Video Walkthrough</p>
+          <p class="deliv-body">A recorded walkthrough of every finding. No jargon. Written for the person responsible for the product, not the person who built it. You will understand what the report means for your business even if you do not write code.</p>
+        </div>
+      </div>
+      <div class="deliv-item">
+        <div class="deliv-tag">CALL</div>
+        <div>
+          <p class="deliv-title">30-min Follow-up Call</p>
+          <p class="deliv-body">After you have read the report and watched the video, we get on a call. You ask questions. We align on what matters most. You leave knowing your next move. Not with more things to figure out.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="section">
+    <p class="section-eye">Timeline</p>
+    <h2>Done in one week.<br>Not one quarter.</h2>
+    <div class="tl">
+      <div class="tl-item">
+        <div class="tl-dot">D 1</div>
+        <div>
+          <p class="tl-title">Day 1 — Access and Onboarding</p>
+          <p class="tl-body">You give me read access to the codebase and production environment. I ask 5 questions about where shipping feels heaviest. No long intake forms. No kickoff presentations.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">D2–5</div>
+        <div>
+          <p class="tl-title">Days 2 to 5 — The Audit</p>
+          <p class="tl-body">I map the system as it actually behaves in production. Not as it was designed. I trace the revenue-critical paths. I find where ownership is unclear and where a change in one place breaks something in another.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">D 6</div>
+        <div>
+          <p class="tl-title">Day 6 — Delivery</p>
+          <p class="tl-body">The report and video land in your inbox. Written for you, not your developer. Clear. Ordered by what matters most to the business.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">D 7</div>
+        <div>
+          <p class="tl-title">Day 7 — Follow-up Call</p>
+          <p class="tl-body">We get on a call. You ask questions. We settle on what matters most. You leave with a direction. Not a list of things to worry about.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT HAPPENS NEXT -->
+  <div class="section">
+    <p class="section-eye">After The Audit</p>
+    <h2>The audit is the start,<br><em>not the end.</em></h2>
+    <div class="next-steps">
+      <div class="next-item">
+        <div class="next-num">1</div>
+        <div>
+          <p class="next-title">You take the report to your team</p>
+          <p class="next-body">Everything in the report is actionable by any competent developer. You are not locked into working with me. The report stands on its own.</p>
+        </div>
+      </div>
+      <div class="next-item">
+        <div class="next-num">2</div>
+        <div>
+          <p class="next-title">Or I help you fix it</p>
+          <p class="next-body">If stabilization makes sense after the audit, we talk about it on the follow-up call. That is a separate engagement. A separate agreement. Nothing is assumed. Nothing is pushed.</p>
+        </div>
+      </div>
+      <div class="next-item">
+        <div class="next-num">3</div>
+        <div>
+          <p class="next-title">Or we part ways with a clear picture</p>
+          <p class="next-body">Sometimes the audit shows the system is healthier than it feels. You will know that too. Knowing you are okay is still worth knowing.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="section">
+    <p class="section-eye">Investment</p>
+    <h2>One fixed price.<br>No surprises.</h2>
+    <div class="price-wrap">
+      <div class="price-ghost">$497</div>
+      <div class="price-num">$497</div>
+      <p class="price-note">One-time · Fixed scope · No hidden fees</p>
+      <ul class="price-list">
+        <li>Full production system audit, up to one week</li>
+        <li>Written report, sequenced by business impact</li>
+        <li>Video walkthrough of every finding</li>
+        <li>30-min follow-up call after delivery</li>
+        <li>A direction. Not just a diagnosis.</li>
+      </ul>
+      <a href="https://calendly.com/adilhussain003/saas-audit-call" class="btn-primary" target="_blank">
+        Book Your Free Discovery Call
+      </a>
+      <span class="btn-sub">We talk first. You decide after. No commitment on the call.</span>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="section">
+    <p class="section-eye">Common Questions</p>
+    <h2>Answered honestly.</h2>
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">What tech stacks do you work with?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">Ruby on Rails, Node.js, PHP, and modern frontends. If your system uses something else, tell me on the discovery call. I will be honest if it falls outside what I can audit well.</div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">What if my codebase is a mess? Will you just tell me to rewrite it?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">No. My whole approach is built around not rewriting. A messy codebase that makes money is worth stabilizing. The audit finds the specific paths causing the most risk. Not everything. Just what is quietly costing you speed and confidence.</div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Is the $497 a deposit toward a bigger project?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">No. The audit is a standalone service at a fixed price. If we decide to work together on stabilization after, that is a separate conversation and a separate agreement. Booking the audit does not commit you to anything else.</div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">How much access do you need?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">Read-only access to the codebase is enough to start. No write access. No database credentials. A temporary collaborator invite on a private repo works fine.</div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">I'm not technical. Will I understand the report?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">Yes. That is the point. The report is written for founders, not developers. The video explains every finding in plain language. The follow-up call is there if something still needs unpacking.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOT FOR YOU -->
+  <div class="section">
+    <p class="section-eye">Honest Disclaimer</p>
+    <h2>This is not<br>for everyone.</h2>
+    <ul class="nfy">
+      <li>If your product is not live yet. You do not need an audit. You need to ship first.</li>
+      <li>If nothing is working and you need a full rebuild. That is a different kind of work.</li>
+      <li>If you want someone to write code without thinking about the system. That is not how I work.</li>
+      <li>If you cannot provide read access to the codebase. The audit cannot happen without it.</li>
+    </ul>
+  </div>
+
+  <!-- FINAL CTA -->
+  <div class="final-cta">
+    <h2>Still reading?<br><em>That's the signal.</em></h2>
+    <p>If this page described your system, the conversation is worth having. 30 minutes. No pitch. Just an honest look at whether this is the right next step.</p>
+    <a href="https://calendly.com/adilhussain003/saas-audit-call" class="btn-primary" target="_blank">
+      Book Your Free Discovery Call
+    </a>
+    <div class="final-contact">
+      <a href="mailto:adilhussain003@gmail.com">adilhussain003@gmail.com</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.linkedin.com/in/adilhussain003" target="_blank">linkedin.com/in/adilhussain003</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2026 Adil Hussain</p>
+    <div class="footer-links">
+      <a href="https://www.linkedin.com/in/adilhussain003" target="_blank">LinkedIn</a>
+      <a href="mailto:adilhussain003@gmail.com">Email</a>
+      <a href="https://calendly.com/adilhussain003/saas-audit-call" target="_blank">Book a Call →</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+</script>
+</body>
+</html>
