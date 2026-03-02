@@ -1,1138 +1,657 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>System Audit — Adil Hussain</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23272422'/><text y='72' x='50' text-anchor='middle' font-size='58' font-family='serif' fill='%23c8c3b8'>A</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,600&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg:        #272422;
-    --surface:   #302d2a;
-    --surface2:  #383430;
-    --border:    #4a4540;
-    --border2:   #5a5550;
-    --text:      #c8c3b8;
-    --text-dim:  #9a9590;
-    --text-muted:#6e6a65;
-    --white:     #ede8e0;
-    --accent:    #d4cfc7;
-  }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Lora', serif;
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 1.7;
-    overflow-x: hidden;
-  }
-
-  /* grain overlay */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 999;
-  }
-
-  .wrap {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 0 28px;
-  }
-
-  /* ── TOP BAR ── */
-  .topbar {
-    padding: 28px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    animation: rise 0.5s ease both;
-  }
-
-  .topbar-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-  }
-
-  .topbar-name {
-    font-family: 'Fraunces', serif;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--white);
-    letter-spacing: 0.01em;
-  }
-
-  .topbar-sep { width: 1px; height: 14px; background: var(--border2); }
-
-  .topbar-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
-  }
-
-  .topbar-links { display: flex; gap: 16px; }
-
-  .topbar-links a {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-    text-decoration: none;
-    letter-spacing: 0.05em;
-    transition: color 0.15s;
-  }
-
-  .topbar-links a:hover { color: var(--white); }
-
-  /* ── AVAILABILITY BANNER ── */
-  .avail-banner {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 11px 0;
-    animation: rise 0.5s ease 0.05s both;
-  }
-
-  .avail-inner { display: flex; align-items: center; gap: 10px; padding-left: 4px; }
-
-  .avail-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #6dbf7e;
-    flex-shrink: 0;
-    animation: pulse 2.5s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.35; }
-  }
-
-  .avail-text {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.07em;
-  }
-
-  .avail-text strong { color: var(--text); font-weight: 500; }
-
-  /* ── HERO ── */
-  .hero {
-    padding: 72px 0 60px;
-    border-bottom: 1px solid var(--border);
-    animation: rise 0.6s ease 0.1s both;
-  }
-
-  .eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .eyebrow::before {
-    content: '';
-    display: block;
-    width: 28px;
-    height: 1px;
-    background: var(--border2);
-  }
-
-  h1 {
-    font-family: 'Fraunces', serif;
-    font-size: clamp(46px, 8.5vw, 80px);
-    font-weight: 900;
-    line-height: 1.0;
-    color: var(--white);
-    letter-spacing: -0.02em;
-    margin-bottom: 28px;
-  }
-
-  h1 em {
-    font-style: italic;
-    color: var(--text-dim);
-    font-weight: 300;
-  }
-
-  .hero-body {
-    font-size: 18px;
-    color: var(--text);
-    max-width: 500px;
-    line-height: 1.8;
-    margin-bottom: 16px;
-    font-family: 'Lora', serif;
-  }
-
-  .hero-body strong { color: var(--white); font-weight: 500; }
-
-  /* trust bar */
-  .trust-bar {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 40px;
-    padding: 14px 0;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .trust-item {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-
-  .trust-item::before {
-    content: '✓';
-    color: var(--accent);
-    font-size: 10px;
-  }
-
-  /* ── BUTTONS ── */
-  .btn-primary {
-    display: inline-block;
-    background: var(--white);
-    color: var(--bg);
-    font-family: 'Lora', serif;
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    padding: 16px 38px;
-    text-decoration: none;
-    transition: all 0.2s ease;
-  }
-
-  .btn-primary:hover {
-    background: var(--accent);
-    transform: translateY(-1px);
-  }
-
-  .btn-sub {
-    display: block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 14px;
-    letter-spacing: 0.07em;
-  }
-
-  /* ── SIGNAL ── */
-  .signal {
-    margin: 56px 0;
-    padding: 32px 36px;
-    background: var(--surface);
-    border-left: 2px solid var(--border2);
-    animation: rise 0.6s ease 0.15s both;
-  }
-
-  .signal-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 18px;
-  }
-
-  .signal-text {
-    font-family: 'Lora', serif;
-    font-size: 16px;
-    color: var(--text);
-    line-height: 1.9;
-  }
-
-  .signal-text em {
-    font-style: italic;
-    color: var(--white);
-  }
-
-  /* ── SECTIONS ── */
-  .section {
-    padding: 64px 0;
-    border-bottom: 1px solid var(--border);
-    animation: rise 0.6s ease 0.2s both;
-  }
-
-  .section-eye {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    margin-bottom: 28px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .section-eye::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  h2 {
-    font-family: 'Fraunces', serif;
-    font-size: clamp(30px, 5.5vw, 46px);
-    font-weight: 700;
-    color: var(--white);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    margin-bottom: 36px;
-  }
-
-  h2 em {
-    font-style: italic;
-    font-weight: 300;
-    color: var(--text-dim);
-  }
-
-  /* ── PROBLEM LIST ── */
-  .prob-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
-
-  .prob-list li {
-    background: var(--surface);
-    padding: 20px 24px;
-    font-family: 'Lora', serif;
-    font-size: 15px;
-    color: var(--text);
-    line-height: 1.75;
-    display: grid;
-    grid-template-columns: 18px 1fr;
-    gap: 16px;
-    align-items: start;
-    transition: background 0.15s;
-  }
-
-  .prob-list li:hover { background: var(--surface2); }
-
-  .prob-list li::before {
-    content: '→';
-    color: var(--text-muted);
-    font-size: 13px;
-    margin-top: 3px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  /* ── PROOF CARD ── */
-  .proof-card {
-    background: var(--surface);
-    padding: 32px;
-    border-left: 2px solid var(--text-dim);
-    margin-top: 40px;
-  }
-
-  .proof-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  .proof-text {
-    font-family: 'Lora', serif;
-    font-size: 15px;
-    color: var(--text);
-    line-height: 1.9;
-    font-style: italic;
-    margin-bottom: 24px;
-  }
-
-  .proof-result {
-    display: flex;
-    gap: 32px;
-    flex-wrap: wrap;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-  }
-
-  .proof-stat { display: flex; flex-direction: column; gap: 5px; }
-
-  .proof-stat-num {
-    font-family: 'Fraunces', serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--white);
-    line-height: 1;
-  }
-
-  .proof-stat-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  /* ── OUTCOMES ── */
-  .outcome-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
-    margin-top: 8px;
-  }
-
-  .outcome-card {
-    background: var(--surface);
-    padding: 28px 24px;
-    transition: background 0.15s;
-  }
-
-  .outcome-card:hover { background: var(--surface2); }
-
-  .outcome-n {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 0.12em;
-    margin-bottom: 14px;
-  }
-
-  .outcome-title {
-    font-family: 'Fraunces', serif;
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--white);
-    margin-bottom: 10px;
-    line-height: 1.3;
-  }
-
-  .outcome-body {
-    font-family: 'Lora', serif;
-    font-size: 14px;
-    color: var(--text-dim);
-    line-height: 1.75;
-  }
-
-  /* ── DELIVERABLES ── */
-  .deliv { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
-
-  .deliv-item {
-    background: var(--surface);
-    padding: 28px 24px;
-    display: grid;
-    grid-template-columns: 52px 1fr;
-    gap: 20px;
-    align-items: start;
-    transition: background 0.15s;
-  }
-
-  .deliv-item:hover { background: var(--surface2); }
-
-  .deliv-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-dim);
-    border: 1px solid var(--border2);
-    padding: 7px 0;
-    text-align: center;
-    letter-spacing: 0.07em;
-    margin-top: 3px;
-  }
-
-  .deliv-title {
-    font-family: 'Fraunces', serif;
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--white);
-    margin-bottom: 8px;
-  }
-
-  .deliv-body {
-    font-family: 'Lora', serif;
-    font-size: 14px;
-    color: var(--text-dim);
-    line-height: 1.8;
-  }
-
-  /* ── WHAT HAPPENS NEXT ── */
-  .next-steps { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
-
-  .next-item {
-    background: var(--surface);
-    padding: 24px;
-    display: grid;
-    grid-template-columns: 36px 1fr;
-    gap: 18px;
-    align-items: start;
-    transition: background 0.15s;
-  }
-
-  .next-item:hover { background: var(--surface2); }
-
-  .next-num {
-    font-family: 'Fraunces', serif;
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--border2);
-    line-height: 1;
-    padding-top: 2px;
-  }
-
-  .next-title {
-    font-family: 'Fraunces', serif;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--white);
-    margin-bottom: 6px;
-  }
-
-  .next-body {
-    font-family: 'Lora', serif;
-    font-size: 14px;
-    color: var(--text-dim);
-    line-height: 1.8;
-  }
-
-  /* ── TIMELINE ── */
-  .tl { display: flex; flex-direction: column; margin-top: 8px; position: relative; }
-
-  .tl::before {
-    content: '';
-    position: absolute;
-    left: 22px;
-    top: 44px;
-    bottom: 44px;
-    width: 1px;
-    background: var(--border);
-  }
-
-  .tl-item {
-    display: grid;
-    grid-template-columns: 44px 1fr;
-    gap: 20px;
-    padding: 22px 0;
-    align-items: start;
-  }
-
-  .tl-dot {
-    width: 44px;
-    height: 44px;
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.05em;
-    position: relative;
-    z-index: 1;
-    flex-shrink: 0;
-  }
-
-  .tl-title {
-    font-family: 'Fraunces', serif;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--white);
-    margin-bottom: 6px;
-    padding-top: 10px;
-  }
-
-  .tl-body {
-    font-family: 'Lora', serif;
-    font-size: 14px;
-    color: var(--text-dim);
-    line-height: 1.8;
-  }
-
-  /* ── PRICING ── */
-  .price-wrap {
-    margin-top: 8px;
-    background: var(--surface);
-    padding: 48px 40px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .price-ghost {
-    position: absolute;
-    right: -10px;
-    bottom: -24px;
-    font-family: 'Fraunces', serif;
-    font-size: 150px;
-    font-weight: 900;
-    color: var(--surface2);
-    line-height: 1;
-    pointer-events: none;
-    user-select: none;
-    letter-spacing: -0.04em;
-  }
-
-  .price-num {
-    font-family: 'Fraunces', serif;
-    font-size: 80px;
-    font-weight: 900;
-    color: var(--white);
-    line-height: 1;
-    margin-bottom: 8px;
-    position: relative;
-    letter-spacing: -0.03em;
-  }
-
-  .price-note {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 36px;
-    position: relative;
-  }
-
-  .price-list { list-style: none; margin-bottom: 40px; position: relative; }
-
-  .price-list li {
-    font-family: 'Lora', serif;
-    font-size: 15px;
-    color: var(--text);
-    padding: 13px 0;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    line-height: 1.6;
-  }
-
-  .price-list li:last-child { border-bottom: none; }
-
-  .price-list li::before {
-    content: '✓';
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    flex-shrink: 0;
-  }
-
-  /* ── FAQ ── */
-  .faq { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
-
-  .faq-item { background: var(--surface); overflow: hidden; }
-
-  .faq-q {
-    width: 100%;
-    background: none;
-    border: none;
-    padding: 22px 24px;
-    text-align: left;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    transition: background 0.15s;
-  }
-
-  .faq-q:hover { background: var(--surface2); }
-
-  .faq-q-text {
-    font-family: 'Fraunces', serif;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--white);
-    line-height: 1.4;
-  }
-
-  .faq-icon {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 18px;
-    color: var(--text-muted);
-    flex-shrink: 0;
-    transition: transform 0.25s ease;
-    line-height: 1;
-  }
-
-  .faq-item.open .faq-icon { transform: rotate(45deg); }
-
-  .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-
-  .faq-item.open .faq-a { max-height: 300px; }
-
-  .faq-a-inner {
-    padding: 4px 24px 24px;
-    font-family: 'Lora', serif;
-    font-size: 15px;
-    color: var(--text);
-    line-height: 1.85;
-  }
-
-  /* ── NOT FOR YOU ── */
-  .nfy { list-style: none; display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
-
-  .nfy li {
-    background: var(--surface);
-    padding: 18px 24px;
-    font-family: 'Lora', serif;
-    font-size: 15px;
-    color: var(--text-dim);
-    display: grid;
-    grid-template-columns: 18px 1fr;
-    gap: 16px;
-    line-height: 1.7;
-    transition: background 0.15s;
-  }
-
-  .nfy li::before {
-    content: '×';
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--text-muted);
-    font-size: 14px;
-    margin-top: 1px;
-  }
-
-  /* ── FINAL CTA ── */
-  .final-cta {
-    padding: 72px 0 64px;
-    text-align: center;
-    border-bottom: 1px solid var(--border);
-    animation: rise 0.6s ease 0.3s both;
-  }
-
-  .final-cta h2 { text-align: center; margin-bottom: 16px; }
-
-  .final-cta p {
-    font-family: 'Lora', serif;
-    font-size: 17px;
-    color: var(--text);
-    max-width: 440px;
-    margin: 0 auto 40px;
-    line-height: 1.8;
-  }
-
-  .final-contact {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 0.07em;
-    margin-top: 20px;
-    text-align: center;
-  }
-
-  .final-contact a {
-    color: var(--text-dim);
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-
-  .final-contact a:hover { color: var(--white); }
-
-  /* ── FOOTER ── */
-  footer {
-    padding: 32px 0 48px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  footer p {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 0.06em;
-  }
-
-  .footer-links { display: flex; gap: 20px; }
-
-  .footer-links a {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    text-decoration: none;
-    letter-spacing: 0.06em;
-    transition: color 0.15s;
-  }
-
-  .footer-links a:hover { color: var(--white); }
-
-  /* ── ANIMATION ── */
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  @media (max-width: 560px) {
-    .outcome-grid { grid-template-columns: 1fr; }
-    .price-wrap { padding: 32px 24px; }
-    .deliv-item { grid-template-columns: 1fr; }
-    .deliv-tag { width: 52px; }
-    h1 { font-size: 44px; }
-    .trust-bar { gap: 14px; }
-    .topbar { flex-direction: column; align-items: flex-start; gap: 10px; }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Audit — Adil Hussain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0b0f14;
+      --bg2:       #0f1419;
+      --bg3:       #111820;
+      --surface:   #141c26;
+      --border:    rgba(255,255,255,0.07);
+      --blue:      #3b9eff;
+      --blue-dim:  rgba(59,158,255,0.12);
+      --white:     #ffffff;
+      --off-white: #e8edf2;
+      --muted:     rgba(255,255,255,0.45);
+      --faint:     rgba(255,255,255,0.18);
+      --sans:  'Space Grotesk', system-ui, sans-serif;
+      --serif: 'Instrument Serif', Georgia, serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--off-white);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── FULL PAGE CIRCUIT ── */
+    #circuit-global {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      opacity: 0.2;
+    }
+    #circuit-global svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* semi-transparent section backgrounds so circuit shows through */
+    section              { padding: 100px 48px; position: relative; }
+    #hero                { background: transparent; padding-top: 160px; padding-bottom: 100px; border-bottom: 1px solid var(--border); }
+    #story               { background: rgba(15,20,25,0.75); }
+    #problem             { background: transparent; }
+    #case-study          { background: rgba(20,28,38,0.8); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    #outcomes            { background: rgba(15,20,25,0.75); }
+    #deliverables        { background: transparent; }
+    #timeline            { background: rgba(15,20,25,0.75); }
+    #pricing             { background: transparent; }
+    #after-audit         { background: rgba(15,20,25,0.75); }
+    #faq                 { background: transparent; }
+    #disclaimer          { background: rgba(15,20,25,0.75); }
+    #final-cta           { background: rgba(20,28,38,0.8); border-top: 1px solid var(--border); text-align: center; padding: 120px 48px; }
+    footer               { background: rgba(11,15,20,0.9); border-top: 1px solid var(--border); padding: 28px 48px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+
+    .container      { max-width: 760px;  margin: 0 auto; position: relative; z-index: 1; }
+    .container-wide { max-width: 1040px; margin: 0 auto; position: relative; z-index: 1; }
+
+    /* ── LABEL ── */
+    .label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--blue); margin-bottom: 24px; display: flex; align-items: center; gap: 10px;
+    }
+    .label::before { content: ''; display: inline-block; width: 24px; height: 1px; background: var(--blue); }
+
+    /* ── HEADINGS ── */
+    h1 {
+      font-family: var(--sans); font-size: clamp(34px, 6vw, 72px); font-weight: 700;
+      line-height: 1.0; letter-spacing: -0.02em; text-transform: uppercase;
+      color: var(--white); margin-bottom: 28px;
+    }
+    h1 .blue { color: var(--blue); }
+    h1 .serif-em { font-family: var(--serif); font-style: italic; text-transform: none; font-weight: 400; font-size: 0.9em; letter-spacing: 0; }
+
+    h2 {
+      font-family: var(--sans); font-size: clamp(24px, 4vw, 44px); font-weight: 700;
+      letter-spacing: -0.02em; text-transform: uppercase; color: var(--white);
+      line-height: 1.05; margin-bottom: 48px;
+    }
+    h2 .blue { color: var(--blue); }
+    h2 .serif-em { font-family: var(--serif); font-style: italic; text-transform: none; font-weight: 400; font-size: 0.95em; letter-spacing: 0; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(11,15,20,0.9); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border); padding: 0 48px;
+      height: 60px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-name { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); text-decoration: none; }
+    .nav-name span { color: var(--blue); }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a { font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--white); }
+    .nav-cta { background: var(--blue) !important; color: #000 !important; padding: 8px 18px !important; border-radius: 5px; font-weight: 700 !important; transition: opacity 0.2s !important; }
+    .nav-cta:hover { opacity: 0.85 !important; }
+
+    /* ── HERO ── */
+    #hero::before {
+      content: ''; position: absolute; top: -100px; left: -100px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(59,158,255,0.09) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .hero-sub { font-size: 17px; color: var(--muted); line-height: 1.7; max-width: 540px; margin-bottom: 44px; }
+    .hero-sub strong { color: var(--off-white); font-weight: 600; }
+    .hero-actions { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-block; background: var(--blue); color: #000;
+      padding: 14px 28px; border-radius: 6px; font-size: 13px; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+    .hero-note { font-size: 12px; color: var(--faint); letter-spacing: 0.03em; }
+    .hero-trust { margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--border); display: flex; gap: 48px; flex-wrap: wrap; }
+    .trust-item { display: flex; flex-direction: column; gap: 6px; }
+    .trust-value { font-size: 22px; font-weight: 700; color: var(--white); letter-spacing: -0.01em; }
+    .trust-value .blue { color: var(--blue); }
+    .trust-label { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* ── STORY ── */
+    .story-block p { font-size: 17px; line-height: 1.8; color: var(--muted); margin-bottom: 20px; }
+    .story-block p:last-child { margin-bottom: 0; }
+    .story-block p em { font-family: var(--serif); font-style: italic; font-size: 19px; color: var(--off-white); }
+    .story-block p strong { color: var(--white); font-weight: 600; }
+
+    /* ── PROBLEM ── */
+    .problem-list { list-style: none; }
+    .problem-list li { padding: 24px 0; border-bottom: 1px solid var(--border); font-size: 15px; color: var(--muted); line-height: 1.7; display: flex; gap: 24px; align-items: flex-start; }
+    .problem-list li:first-child { border-top: 1px solid var(--border); }
+    .problem-num { font-size: 11px; font-weight: 700; color: var(--blue); letter-spacing: 0.1em; min-width: 24px; padding-top: 3px; flex-shrink: 0; }
+
+    /* ── CASE STUDY ── */
+    .case-body { font-size: 16px; color: var(--muted); line-height: 1.75; max-width: 620px; margin-bottom: 56px; }
+    .case-body p { margin-bottom: 16px; }
+    .case-body p:last-child { margin-bottom: 0; }
+    .case-body strong { color: var(--off-white); font-weight: 600; }
+    .case-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; max-width: 600px; }
+    .stat-cell { background: rgba(17,24,32,0.95); padding: 32px 28px; }
+    .stat-value { font-size: 38px; font-weight: 700; color: var(--blue); letter-spacing: -0.02em; line-height: 1; margin-bottom: 8px; }
+    .stat-label { font-size: 12px; color: var(--muted); line-height: 1.4; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* ── OUTCOMES ── */
+    .outcome-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .outcome-cell { background: rgba(17,24,32,0.95); padding: 36px 32px; transition: background 0.2s; }
+    .outcome-cell:hover { background: rgba(20,28,38,0.98); }
+    .outcome-num { font-size: 11px; font-weight: 700; color: var(--blue); letter-spacing: 0.12em; margin-bottom: 14px; }
+    .outcome-title { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .outcome-desc { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* ── DELIVERABLES ── */
+    .deliverable-item { display: grid; grid-template-columns: 80px 1fr; gap: 32px; padding: 36px 0; border-bottom: 1px solid var(--border); align-items: start; }
+    .deliverable-item:first-child { border-top: 1px solid var(--border); }
+    .deliverable-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: var(--blue); padding: 5px 10px; border: 1px solid rgba(59,158,255,0.3); border-radius: 4px; background: var(--blue-dim); display: inline-block; text-align: center; }
+    .deliverable-title { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .deliverable-desc { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* ── TIMELINE ── */
+    .timeline-item { display: grid; grid-template-columns: 110px 1fr; gap: 32px; padding: 32px 0; border-bottom: 1px solid var(--border); }
+    .timeline-item:first-child { border-top: 1px solid var(--border); }
+    .timeline-day { font-size: 11px; font-weight: 700; color: var(--blue); letter-spacing: 0.1em; text-transform: uppercase; padding-top: 3px; flex-shrink: 0; }
+    .timeline-title { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .timeline-desc { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* ── PRICING ── */
+    .pricing-card { border: 1px solid rgba(59,158,255,0.25); border-radius: 12px; padding: 56px; max-width: 560px; background: rgba(20,28,38,0.95); position: relative; overflow: hidden; }
+    .pricing-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--blue); }
+    .pricing-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at top left, rgba(59,158,255,0.06) 0%, transparent 60%); pointer-events: none; }
+    .pricing-price { font-size: 72px; font-weight: 700; color: var(--white); letter-spacing: -0.03em; line-height: 1; margin-bottom: 6px; }
+    .pricing-price span { color: var(--blue); }
+    .pricing-note { font-size: 12px; color: var(--muted); margin-bottom: 40px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .pricing-includes { list-style: none; display: flex; flex-direction: column; gap: 14px; margin-bottom: 44px; }
+    .pricing-includes li { font-size: 15px; color: var(--muted); display: flex; gap: 12px; align-items: flex-start; }
+    .check { color: var(--blue); font-size: 14px; min-width: 16px; margin-top: 2px; font-weight: 700; flex-shrink: 0; }
+    .pricing-cta-note { margin-top: 16px; font-size: 12px; color: var(--faint); letter-spacing: 0.03em; }
+
+    /* ── AFTER AUDIT ── */
+    .after-audit-grid { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 32px; }
+    .after-option { display: grid; grid-template-columns: 150px 1fr; gap: 32px; align-items: start; background: rgba(17,24,32,0.95); padding: 40px 36px; transition: background 0.2s; }
+    .after-option:hover { background: rgba(20,28,38,0.98); }
+    .after-option-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: var(--blue); padding: 5px 10px; border: 1px solid rgba(59,158,255,0.3); border-radius: 4px; background: var(--blue-dim); display: inline-block; text-align: center; margin-bottom: 12px; }
+    .after-option-name { font-size: 13px; font-weight: 700; color: var(--white); text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.4; }
+    .after-option-title { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .after-option-desc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+    .after-note { font-size: 14px; color: var(--off-white); letter-spacing: 0.02em; font-weight: 500; border-top: 1px solid var(--border); padding-top: 24px; }
+
+    /* ── FAQ ── */
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-item:first-child { border-top: 1px solid var(--border); }
+    .faq-q { width: 100%; background: none; border: none; text-align: left; padding: 24px 0; font-size: 15px; font-weight: 600; color: var(--off-white); cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; font-family: var(--sans); letter-spacing: 0.02em; }
+    .faq-q:hover { color: var(--white); }
+    .faq-icon { font-size: 18px; color: var(--blue); transition: transform 0.25s; flex-shrink: 0; }
+    .faq-item.open .faq-icon { transform: rotate(45deg); }
+    .faq-a { font-size: 14px; color: var(--muted); line-height: 1.7; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding-bottom 0.3s ease; }
+    .faq-item.open .faq-a { max-height: 300px; padding-bottom: 24px; }
+
+    /* ── DISCLAIMER ── */
+    .disclaimer-list { list-style: none; max-width: 600px; }
+    .disclaimer-list li { padding: 20px 0; border-bottom: 1px solid var(--border); font-size: 15px; color: var(--muted); display: flex; gap: 16px; align-items: flex-start; }
+    .disclaimer-list li:first-child { border-top: 1px solid var(--border); }
+    .disclaimer-x { color: rgba(255,80,80,0.5); font-size: 14px; min-width: 16px; font-weight: 700; flex-shrink: 0; padding-top: 2px; }
+
+    /* ── FINAL CTA ── */
+    #final-cta::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 800px; height: 400px; background: radial-gradient(ellipse, rgba(59,158,255,0.08) 0%, transparent 70%); pointer-events: none; }
+    #final-cta .label { justify-content: center; }
+    #final-cta h2 { margin-bottom: 20px; }
+    .cta-sub { font-size: 17px; color: var(--muted); margin-bottom: 48px; max-width: 460px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .btn-outline { display: inline-block; border: 1px solid var(--blue); color: var(--blue); padding: 14px 32px; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; transition: background 0.2s, color 0.2s, transform 0.15s; }
+    .btn-outline:hover { background: var(--blue); color: #000; transform: translateY(-1px); }
+
+    /* ── FOOTER ── */
+    .footer-name { font-size: 12px; color: var(--faint); letter-spacing: 0.06em; text-transform: uppercase; }
+    .footer-links { display: flex; gap: 28px; }
+    .footer-links a { font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.06em; text-transform: uppercase; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--blue); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      nav { padding: 0 20px; }
+      nav .nav-links a:not(.nav-cta) { display: none; }
+      section { padding: 64px 20px; }
+      #hero { padding: 110px 20px 64px; }
+      h1 { font-size: 32px; }
+      h2 { font-size: 24px; margin-bottom: 32px; }
+      .hero-trust { gap: 28px; }
+      .case-stats { grid-template-columns: 1fr; }
+      .outcome-grid { grid-template-columns: 1fr; }
+      .deliverable-item { grid-template-columns: 1fr; gap: 12px; }
+      .timeline-item { grid-template-columns: 1fr; gap: 8px; }
+      .pricing-card { padding: 28px 20px; }
+      .pricing-price { font-size: 52px; }
+      .after-option { grid-template-columns: 1fr; gap: 16px; padding: 28px 20px; }
+      #final-cta { padding: 80px 20px; }
+      footer { padding: 24px 20px; flex-direction: column; text-align: center; }
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <div class="topbar-left">
-      <span class="topbar-name">Adil Hussain</span>
-      <div class="topbar-sep"></div>
-      <span class="topbar-title">7 years · Rails, Node, PHP · Live production systems</span>
-    </div>
-    <div class="topbar-links">
-      <a href="https://www.linkedin.com/in/adilhussain003" target="_blank">LinkedIn ↗</a>
-      <a href="mailto:adilhussain003@gmail.com">Email</a>
-    </div>
+  <!-- FULL PAGE CIRCUIT BACKGROUND -->
+  <div id="circuit-global">
+    <svg viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#3b9eff" stroke-width="1.5" fill="none">
+        <line x1="0" y1="80"  x2="1200" y2="80"/>
+        <line x1="0" y1="220" x2="1200" y2="220"/>
+        <line x1="0" y1="380" x2="1200" y2="380"/>
+        <line x1="0" y1="520" x2="1200" y2="520"/>
+        <line x1="0" y1="660" x2="1200" y2="660"/>
+        <line x1="0" y1="800" x2="1200" y2="800"/>
+        <line x1="100"  y1="0" x2="100"  y2="900"/>
+        <line x1="260"  y1="0" x2="260"  y2="900"/>
+        <line x1="460"  y1="0" x2="460"  y2="900"/>
+        <line x1="660"  y1="0" x2="660"  y2="900"/>
+        <line x1="840"  y1="0" x2="840"  y2="900"/>
+        <line x1="1020" y1="0" x2="1020" y2="900"/>
+        <line x1="1160" y1="0" x2="1160" y2="900"/>
+        <!-- L-connectors -->
+        <polyline points="100,80  170,80  170,220 260,220"/>
+        <polyline points="460,80  540,80  540,220 660,220"/>
+        <polyline points="840,80  910,80  910,220 1020,220"/>
+        <polyline points="260,380 340,380 340,520 460,520"/>
+        <polyline points="660,380 740,380 740,520 840,520"/>
+        <polyline points="1020,380 1100,380 1100,520 1160,520"/>
+        <polyline points="100,660 180,660 180,800 260,800"/>
+        <polyline points="460,660 540,660 540,800 660,800"/>
+        <polyline points="840,660 920,660 920,800 1020,800"/>
+        <polyline points="260,520 340,520 340,660 460,660"/>
+        <polyline points="660,220 740,220 740,380 840,380"/>
+        <polyline points="100,800 170,800 170,900"/>
+        <!-- Nodes -->
+        <circle cx="100"  cy="80"  r="5" fill="#3b9eff"/>
+        <circle cx="260"  cy="220" r="5" fill="#3b9eff"/>
+        <circle cx="460"  cy="80"  r="4" fill="#3b9eff"/>
+        <circle cx="660"  cy="220" r="5" fill="#3b9eff"/>
+        <circle cx="840"  cy="80"  r="4" fill="#3b9eff"/>
+        <circle cx="1020" cy="220" r="5" fill="#3b9eff"/>
+        <circle cx="260"  cy="380" r="4" fill="#3b9eff"/>
+        <circle cx="460"  cy="520" r="5" fill="#3b9eff"/>
+        <circle cx="660"  cy="380" r="4" fill="#3b9eff"/>
+        <circle cx="840"  cy="520" r="5" fill="#3b9eff"/>
+        <circle cx="1020" cy="380" r="4" fill="#3b9eff"/>
+        <circle cx="100"  cy="660" r="4" fill="#3b9eff"/>
+        <circle cx="260"  cy="800" r="5" fill="#3b9eff"/>
+        <circle cx="660"  cy="800" r="4" fill="#3b9eff"/>
+        <circle cx="1020" cy="800" r="5" fill="#3b9eff"/>
+        <!-- Square pads -->
+        <rect x="96"  y="216" width="8" height="8" fill="none" stroke="#3b9eff"/>
+        <rect x="456" y="216" width="8" height="8" fill="none" stroke="#3b9eff"/>
+        <rect x="836" y="216" width="8" height="8" fill="none" stroke="#3b9eff"/>
+        <rect x="256" y="516" width="8" height="8" fill="none" stroke="#3b9eff"/>
+        <rect x="656" y="516" width="8" height="8" fill="none" stroke="#3b9eff"/>
+        <rect x="1016" y="516" width="8" height="8" fill="none" stroke="#3b9eff"/>
+        <rect x="456" y="656" width="8" height="8" fill="none" stroke="#3b9eff"/>
+        <rect x="836" y="656" width="8" height="8" fill="none" stroke="#3b9eff"/>
+        <rect x="1156" y="76" width="8" height="8" fill="none" stroke="#3b9eff"/>
+      </g>
+    </svg>
   </div>
 
-  <!-- AVAILABILITY BANNER -->
-  <div class="avail-banner">
-    <div class="avail-inner">
-      <div class="avail-dot"></div>
-      <span class="avail-text"><strong>Currently accepting audits</strong> — 2 slots available this month</span>
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-name">Adil <span>Hussain</span></a>
+    <div class="nav-links">
+      <a href="#problem">Problem</a>
+      <a href="#after-audit">After Audit</a>
+      <a href="#pricing">Pricing</a>
+      <a href="https://www.linkedin.com/in/adilhussain003" target="_blank">LinkedIn</a>
+      <a href="https://calendly.com/adilhussain003/saas-audit-call" class="nav-cta">Book a Call</a>
     </div>
-  </div>
+  </nav>
 
   <!-- HERO -->
-  <div class="hero">
-    <p class="eyebrow">Service · System Audit</p>
-    <h1>Your SaaS works.<br><em>Changing it</em><br>shouldn't feel risky.</h1>
-    <p class="hero-body">
-      Your product is live. Customers are paying. But every release feels heavier than it should.
-      <strong>This audit tells you exactly why. And what to fix first.</strong>
-    </p>
-    <div class="trust-bar">
-      <span class="trust-item">7 years on live production systems</span>
-      <span class="trust-item">Rails · Node.js · PHP</span>
-      <span class="trust-item">US & UK clients</span>
-      <span class="trust-item">Fixed price. No surprises.</span>
+  <section id="hero">
+    <div class="container">
+      <div class="label">System Audit</div>
+      <h1>Your software<br>works. <span class="blue">Changing it</span><br><span class="serif-em">shouldn't feel like a gamble.</span></h1>
+      <p class="hero-sub">Your product is live. Revenue is coming in. But every release feels heavier than it should. <strong>This audit tells you exactly why — and what to fix first.</strong></p>
+      <div class="hero-actions">
+        <a href="https://calendly.com/adilhussain003/saas-audit-call" class="btn-primary">Book a Free Discovery Call</a>
+        <span class="hero-note">No pitch. No proposal. Just a conversation.</span>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-item">
+          <span class="trust-value"><span class="blue">7</span> Years</span>
+          <span class="trust-label">Live production systems</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-value">Rails · Node · PHP</span>
+          <span class="trust-label">Stacks audited</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-value">US &amp; UK</span>
+          <span class="trust-label">Clients served</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-value"><span class="blue">$497</span></span>
+          <span class="trust-label">Fixed price, no surprises</span>
+        </div>
+      </div>
     </div>
-    <a href="https://calendly.com/adilhussain003/saas-audit-call" class="btn-primary" target="_blank">
-      Book a Free 30-min Discovery Call
-    </a>
-    <span class="btn-sub">No pitch. No proposal deck. Just a conversation about your system.</span>
-  </div>
+  </section>
 
-  <!-- SIGNAL -->
-  <div class="signal">
-    <p class="signal-label">A Familiar Moment</p>
-    <p class="signal-text">
-      Someone asks: <em>"Can we change the price for one customer?"</em><br>
-      Simple request. Should take 5 minutes.<br>
-      The engineer goes quiet. Opens the code. Closes it.<br>
-      Comes back 20 minutes later: <em>"I need to check something."</em><br><br>
-      That pause is not a developer problem.<br>
-      It is a system ownership problem.<br>
-      And it gets more expensive every week it goes unaddressed.
-    </p>
-  </div>
+  <!-- STORY -->
+  <section id="story">
+    <div class="container">
+      <div class="label">A Familiar Moment</div>
+      <div class="story-block">
+        <p>Someone asks: <em>" Can we change the price for one customer?"</em></p>
+        <p>Simple request. Should take five minutes.</p>
+        <p>The engineer goes quiet. Opens the code. Closes it. Comes back twenty minutes later: <em>"I need to check something."</em></p>
+        <p><strong>That pause is not a developer problem. It is a system ownership problem.</strong> And it gets more expensive every week it goes unaddressed.</p>
+      </div>
+    </div>
+  </section>
 
   <!-- PROBLEM -->
-  <div class="section">
-    <p class="section-eye">The Problem</p>
-    <h2>Nothing is broken.<br><em>Everything feels risky.</em></h2>
-    <ul class="prob-list">
-      <li>Releases that used to take hours now take days. Nobody can say what else a change will touch.</li>
-      <li>Simple requests keep getting postponed. Not because they are hard. Because the blast radius is unknown.</li>
-      <li>AI shipped the MVP fast. Now that same AI cannot tell you what is safe to change in what it built.</li>
-      <li>Revenue keeps coming in. But growth is quietly capping because the system cannot keep up with the roadmap.</li>
-      <li>Every new developer takes weeks just to understand what the system actually does.</li>
-    </ul>
+  <section id="problem">
+    <div class="container">
+      <div class="label">The Problem</div>
+      <h2>Nothing is broken.<br><span class="serif-em">Everything feels risky.</span></h2>
+      <ul class="problem-list">
+        <li><span class="problem-num">01</span>Releases that used to take hours now take days. Nobody can say what else a change will touch.</li>
+        <li><span class="problem-num">02</span>Simple requests keep getting postponed. Not because they are hard. Because the blast radius is unknown.</li>
+        <li><span class="problem-num">03</span>AI shipped the MVP fast. Now that same AI cannot tell you what is safe to change in what it built.</li>
+        <li><span class="problem-num">04</span>Revenue keeps coming in. But growth is quietly capping because the system cannot keep up with the roadmap.</li>
+        <li><span class="problem-num">05</span>Every new developer takes weeks just to understand what the system actually does.</li>
+      </ul>
+    </div>
+  </section>
 
-    <!-- PROOF — right when skepticism peaks -->
-    <div class="proof-card">
-      <p class="proof-label">Real Situation · US Legal Docs Business</p>
-      <p class="proof-text">
-        A US document business had been running on the same backend for years.
-        Two new forms had been blocked for months.
-        Every developer who tried ran into the same resistance.
-        Not errors. Just the feeling that touching this area pulled in more than expected.
-        Previous developers recommended a full rebuild.
-        I audited the system instead.
-        Those two forms represented $15,000 to $45,000 in annual revenue waiting to move.
-        We unblocked it without touching anything that was already working.
-      </p>
-      <div class="proof-result">
-        <div class="proof-stat">
-          <span class="proof-stat-num">$45k</span>
-          <span class="proof-stat-label">Revenue unblocked</span>
+  <!-- CASE STUDY -->
+  <section id="case-study">
+    <div class="container">
+      <div class="label">Real Situation</div>
+      <h2>A US document business.<br><span class="blue">Two blocked forms.</span><br><span class="serif-em">Six months waiting.</span></h2>
+      <div class="case-body">
+        <p>The backend had been running for years. Two new forms were stuck — not because of errors, but because every developer who touched that area felt something pulling in more than expected. Previous developers recommended a full rebuild.</p>
+        <p><strong>We audited the system instead.</strong> Those two forms represented significant annual revenue waiting to move. We unblocked it without touching anything already working.</p>
+      </div>
+      <div class="case-stats">
+        <div class="stat-cell">
+          <div class="stat-value">$45k+</div>
+          <div class="stat-label">Annual revenue unblocked</div>
         </div>
-        <div class="proof-stat">
-          <span class="proof-stat-num">0</span>
-          <span class="proof-stat-label">Features broken</span>
+        <div class="stat-cell">
+          <div class="stat-value">0</div>
+          <div class="stat-label">Existing features broken</div>
         </div>
-        <div class="proof-stat">
-          <span class="proof-stat-num">No</span>
-          <span class="proof-stat-label">Full rebuild needed</span>
+        <div class="stat-cell">
+          <div class="stat-value">No</div>
+          <div class="stat-label">Full rebuild needed</div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- OUTCOME -->
-  <div class="section">
-    <p class="section-eye">The Outcome</p>
-    <h2>What changes after<br>the audit.</h2>
-    <div class="outcome-grid">
-      <div class="outcome-card">
-        <p class="outcome-n">01 —</p>
-        <p class="outcome-title">You know what is actually fragile</p>
-        <p class="outcome-body">Not a guess. Not a feeling. The specific paths that carry risk. And the ones stable enough to change.</p>
+  <!-- OUTCOMES -->
+  <section id="outcomes">
+    <div class="container-wide">
+      <div style="max-width:760px; margin:0 auto 48px; position:relative; z-index:1;">
+        <div class="label">The Outcome</div>
+        <h2>What changes after<br>the audit.</h2>
       </div>
-      <div class="outcome-card">
-        <p class="outcome-n">02 —</p>
-        <p class="outcome-title">A plan sequenced by impact</p>
-        <p class="outcome-body">Not "refactor everything." What to fix first. What to leave alone. Ordered by what unblocks revenue fastest.</p>
-      </div>
-      <div class="outcome-card">
-        <p class="outcome-n">03 —</p>
-        <p class="outcome-title">Blocked revenue starts moving</p>
-        <p class="outcome-body">Features stuck in "too risky" get a path to ship. Without touching what is already working.</p>
-      </div>
-      <div class="outcome-card">
-        <p class="outcome-n">04 —</p>
-        <p class="outcome-title">The team stops hesitating</p>
-        <p class="outcome-body">Decisions stop stalling. Deploys stop carrying invisible weight. The system starts feeling like something you own again.</p>
+      <div class="outcome-grid">
+        <div class="outcome-cell">
+          <div class="outcome-num">01</div>
+          <div class="outcome-title">You know what is actually fragile</div>
+          <div class="outcome-desc">Not a guess. Not a feeling. The specific paths that carry risk — and the ones stable enough to change.</div>
+        </div>
+        <div class="outcome-cell">
+          <div class="outcome-num">02</div>
+          <div class="outcome-title">A plan sequenced by impact</div>
+          <div class="outcome-desc">Not "refactor everything." What to fix first? What to leave alone. Ordered by what unblocks revenue fastest.</div>
+        </div>
+        <div class="outcome-cell">
+          <div class="outcome-num">03</div>
+          <div class="outcome-title">Blocked revenue starts moving</div>
+          <div class="outcome-desc">Features stuck in "too risky" get a clear path to ship — without touching what is already working.</div>
+        </div>
+        <div class="outcome-cell">
+          <div class="outcome-num">04</div>
+          <div class="outcome-title">The team stops hesitating</div>
+          <div class="outcome-desc">Deploys stop carrying invisible weight. The system starts feeling like something you own again.</div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- DELIVERABLES -->
-  <div class="section">
-    <p class="section-eye">What You Receive</p>
-    <h2>Three deliverables.<br>One clear picture.</h2>
-    <div class="deliv">
-      <div class="deliv-item">
-        <div class="deliv-tag">DOC</div>
-        <div>
-          <p class="deliv-title">Written Audit Report</p>
-          <p class="deliv-body">What your system actually is in production. Which revenue paths are fragile. What is blocking safe change. A prioritized list of what to fix first, sequenced by business impact. Not technical preference.</p>
+  <section id="deliverables">
+    <div class="container">
+      <div class="label">What You Receive</div>
+      <h2>Three deliverables.<br><span class="blue">One clear picture.</span></h2>
+      <div>
+        <div class="deliverable-item">
+          <span class="deliverable-tag">DOC</span>
+          <div>
+            <div class="deliverable-title">Written Audit Report</div>
+            <div class="deliverable-desc">What your system actually is in production. Which revenue paths are fragile? A prioritized list of what to fix first, sequenced by business impact — not technical preference.</div>
+          </div>
         </div>
-      </div>
-      <div class="deliv-item">
-        <div class="deliv-tag">VID</div>
-        <div>
-          <p class="deliv-title">Video Walkthrough</p>
-          <p class="deliv-body">A recorded walkthrough of every finding. No jargon. Written for the person responsible for the product, not the person who built it. You will understand what the report means for your business even if you do not write code.</p>
+        <div class="deliverable-item">
+          <span class="deliverable-tag">VIDEO</span>
+          <div>
+            <div class="deliverable-title">Video Walkthrough</div>
+            <div class="deliverable-desc">A recorded walkthrough of every finding. No jargon. Written for the person responsible for the product. You will understand what the report means even if you do not write code.</div>
+          </div>
         </div>
-      </div>
-      <div class="deliv-item">
-        <div class="deliv-tag">CALL</div>
-        <div>
-          <p class="deliv-title">30-min Follow-up Call</p>
-          <p class="deliv-body">After you have read the report and watched the video, we get on a call. You ask questions. We align on what matters most. You leave knowing your next move. Not with more things to figure out.</p>
+        <div class="deliverable-item">
+          <span class="deliverable-tag">CALL</span>
+          <div>
+            <div class="deliverable-title">30-min Follow-up Call</div>
+            <div class="deliverable-desc">After you read the report and watch the video, we get on a call. You ask questions. You leave knowing your next move — not with more things to figure out.</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- TIMELINE -->
-  <div class="section">
-    <p class="section-eye">Timeline</p>
-    <h2>Done in one week.<br>Not one quarter.</h2>
-    <div class="tl">
-      <div class="tl-item">
-        <div class="tl-dot">D 1</div>
-        <div>
-          <p class="tl-title">Day 1 — Access and Onboarding</p>
-          <p class="tl-body">You give me read access to the codebase and production environment. I ask 5 questions about where shipping feels heaviest. No long intake forms. No kickoff presentations.</p>
+  <section id="timeline">
+    <div class="container">
+      <div class="label">Timeline</div>
+      <h2>Done in one week.<br><span class="serif-em">Not one quarter.</span></h2>
+      <div>
+        <div class="timeline-item">
+          <span class="timeline-day">Day 1</span>
+          <div>
+            <div class="timeline-title">Access &amp; Onboarding</div>
+            <div class="timeline-desc">You give me read access to the codebase. I ask 5 questions about where shipping feels heaviest. No long intake forms. No kickoff presentations.</div>
+          </div>
         </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot">D2–5</div>
-        <div>
-          <p class="tl-title">Days 2 to 5 — The Audit</p>
-          <p class="tl-body">I map the system as it actually behaves in production. Not as it was designed. I trace the revenue-critical paths. I find where ownership is unclear and where a change in one place breaks something in another.</p>
+        <div class="timeline-item">
+          <span class="timeline-day">Days 2–5</span>
+          <div>
+            <div class="timeline-title">The Audit</div>
+            <div class="timeline-desc">I map the system as it actually behaves in production — not as it was designed. I trace the revenue-critical paths and find where a change in one place breaks something in another.</div>
+          </div>
         </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot">D 6</div>
-        <div>
-          <p class="tl-title">Day 6 — Delivery</p>
-          <p class="tl-body">The report and video land in your inbox. Written for you, not your developer. Clear. Ordered by what matters most to the business.</p>
+        <div class="timeline-item">
+          <span class="timeline-day">Day 6</span>
+          <div>
+            <div class="timeline-title">Delivery</div>
+            <div class="timeline-desc">The report and video land in your inbox. Written for you, not your developer. Clear. Ordered by what matters most to the business.</div>
+          </div>
         </div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot">D 7</div>
-        <div>
-          <p class="tl-title">Day 7 — Follow-up Call</p>
-          <p class="tl-body">We get on a call. You ask questions. We settle on what matters most. You leave with a direction. Not a list of things to worry about.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- WHAT HAPPENS NEXT -->
-  <div class="section">
-    <p class="section-eye">After The Audit</p>
-    <h2>The audit is the start,<br><em>not the end.</em></h2>
-    <div class="next-steps">
-      <div class="next-item">
-        <div class="next-num">1</div>
-        <div>
-          <p class="next-title">You take the report to your team</p>
-          <p class="next-body">Everything in the report is actionable by any competent developer. You are not locked into working with me. The report stands on its own.</p>
-        </div>
-      </div>
-      <div class="next-item">
-        <div class="next-num">2</div>
-        <div>
-          <p class="next-title">Or I help you fix it</p>
-          <p class="next-body">If stabilization makes sense after the audit, we talk about it on the follow-up call. That is a separate engagement. A separate agreement. Nothing is assumed. Nothing is pushed.</p>
-        </div>
-      </div>
-      <div class="next-item">
-        <div class="next-num">3</div>
-        <div>
-          <p class="next-title">Or we part ways with a clear picture</p>
-          <p class="next-body">Sometimes the audit shows the system is healthier than it feels. You will know that too. Knowing you are okay is still worth knowing.</p>
+        <div class="timeline-item">
+          <span class="timeline-day">Day 7</span>
+          <div>
+            <div class="timeline-title">Follow-up Call</div>
+            <div class="timeline-desc">We get on a call. You ask questions. You leave with a direction — not a list of things to worry about.</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- PRICING -->
-  <div class="section">
-    <p class="section-eye">Investment</p>
-    <h2>One fixed price.<br>No surprises.</h2>
-    <div class="price-wrap">
-      <div class="price-ghost">$497</div>
-      <div class="price-num">$497</div>
-      <p class="price-note">One-time · Fixed scope · No hidden fees</p>
-      <ul class="price-list">
-        <li>Full production system audit, up to one week</li>
-        <li>Written report, sequenced by business impact</li>
-        <li>Video walkthrough of every finding</li>
-        <li>30-min follow-up call after delivery</li>
-        <li>A direction. Not just a diagnosis.</li>
-      </ul>
-      <a href="https://calendly.com/adilhussain003/saas-audit-call" class="btn-primary" target="_blank">
-        Book Your Free Discovery Call
-      </a>
-      <span class="btn-sub">We talk first. You decide after. No commitment on the call.</span>
+  <section id="pricing">
+    <div class="container">
+      <div class="label">Investment</div>
+      <h2>One fixed price.<br><span class="blue">No surprises.</span></h2>
+      <div class="pricing-card">
+        <div class="pricing-price"><span>$</span>497</div>
+        <div class="pricing-note">One-time · Fixed scope · No hidden fees</div>
+        <ul class="pricing-includes">
+          <li><span class="check">✓</span> Full production system audit, up to one week</li>
+          <li><span class="check">✓</span> Written report, sequenced by business impact</li>
+          <li><span class="check">✓</span> Video walkthrough of every finding</li>
+          <li><span class="check">✓</span> 30-min follow-up call after delivery</li>
+          <li><span class="check">✓</span> A direction. Not just a diagnosis.</li>
+        </ul>
+        <a href="https://calendly.com/adilhussain003/saas-audit-call" class="btn-primary">Book Your Free Discovery Call</a>
+        <p class="pricing-cta-note">We talk first. You decide after. No commitment on the call.</p>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <!-- AFTER AUDIT -->
+  <section id="after-audit">
+    <div class="container">
+      <div class="label">After The Audit</div>
+      <h2>The report is clear.<br><span class="blue">What happens next</span><br><span class="serif-em">is your call.</span></h2>
+      <p style="font-size:16px; color:var(--muted); max-width:580px; margin-bottom:48px; line-height:1.75;">
+        Most founders walk away with three questions:
+        <em style="color:var(--off-white); font-family:var(--serif); font-style:italic;">Will my developer actually follow the report? What if they break something mid-fix? Who do I call when the next decision feels risky?</em>
+        Here is how we handle each.
+      </p>
+      <div class="after-audit-grid">
+        <div class="after-option">
+          <div>
+            <div class="after-option-badge">OPTION 01</div>
+            <div class="after-option-name">Take It To<br>Your Team</div>
+          </div>
+          <div>
+            <div class="after-option-title">The report stands on its own</div>
+            <div class="after-option-desc">Every finding is written for a competent developer to act on without me. The fixes are sequenced by what unblocks revenue first — so there is no debate about where to start. You are not locked into working with me. Most clients hand this to their team on Day 8 and start shipping within the week.</div>
+          </div>
+        </div>
+        <div class="after-option">
+          <div>
+            <div class="after-option-badge">OPTION 02</div>
+            <div class="after-option-name">Fixing<br>Retainer</div>
+          </div>
+          <div>
+            <div class="after-option-title">I implement exactly what the audit found</div>
+            <div class="after-option-desc">Scoped to the audit. Fixed price. No scope creep, no surprises. If your developer does not have bandwidth — or you would rather not have the same team that created the problem also fix it — I step in and handle the stabilization myself. We agree on the scope upfront. Work starts only after you approve it.</div>
+          </div>
+        </div>
+        <div class="after-option">
+          <div>
+            <div class="after-option-badge">OPTION 03</div>
+            <div class="after-option-name">On-Call<br>Advisory</div>
+          </div>
+          <div>
+            <div class="after-option-title">Your team ships. I'm the safety net.</div>
+            <div class="after-option-desc">Your developer does the work. But before any significant change goes out, you run it by me. Weekly check-in call to review what is in progress. Async access via Slack or WhatsApp when something feels off. For founders who want to keep moving fast without the fear of breaking something quietly, this is the option that removes that ceiling.</div>
+          </div>
+        </div>
+      </div>
+      <p class="after-note">Options 02 and 03 are discussed on the Day 7 follow-up call. Nothing is assumed. Nothing is pushed. The audit is complete regardless of what you choose next.</p>
+    </div>
+  </section>
 
   <!-- FAQ -->
-  <div class="section">
-    <p class="section-eye">Common Questions</p>
-    <h2>Answered honestly.</h2>
-    <div class="faq">
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">
-          <span class="faq-q-text">What tech stacks do you work with?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-a">
-          <div class="faq-a-inner">Ruby on Rails, Node.js, PHP, and modern frontends. If your system uses something else, tell me on the discovery call. I will be honest if it falls outside what I can audit well.</div>
+  <section id="faq">
+    <div class="container">
+      <div class="label">Common Questions</div>
+      <h2>Answered honestly.</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-q">What tech stacks do you work with? <span class="faq-icon">+</span></button>
+          <div class="faq-a">Ruby on Rails, Node.js, PHP, and modern frontends. If your system uses something else, tell me on the discovery call. I will be honest if it falls outside what I can audit well.</div>
         </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">
-          <span class="faq-q-text">What if my codebase is a mess? Will you just tell me to rewrite it?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-a">
-          <div class="faq-a-inner">No. My whole approach is built around not rewriting. A messy codebase that makes money is worth stabilizing. The audit finds the specific paths causing the most risk. Not everything. Just what is quietly costing you speed and confidence.</div>
+        <div class="faq-item">
+          <button class="faq-q">What if my codebase is a mess? Will you just tell me to rewrite it? <span class="faq-icon">+</span></button>
+          <div class="faq-a">No. My whole approach is built around not rewriting. A messy codebase that makes money is worth stabilizing. The audit finds the specific paths causing the most risk — not everything, just what is quietly costing you speed and confidence.</div>
         </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">
-          <span class="faq-q-text">Is the $497 a deposit toward a bigger project?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-a">
-          <div class="faq-a-inner">No. The audit is a standalone service at a fixed price. If we decide to work together on stabilization after, that is a separate conversation and a separate agreement. Booking the audit does not commit you to anything else.</div>
+        <div class="faq-item">
+          <button class="faq-q">Is the $497 a deposit toward a bigger project? <span class="faq-icon">+</span></button>
+          <div class="faq-a">No. The audit is a standalone service at a fixed price. If we decide to work together on stabilization after that, it is a separate conversation and a separate agreement. Booking the audit does not commit you to anything else.</div>
         </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">
-          <span class="faq-q-text">How much access do you need?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-a">
-          <div class="faq-a-inner">Read-only access to the codebase is enough to start. No write access. No database credentials. A temporary collaborator invite on a private repo works fine.</div>
+        <div class="faq-item">
+          <button class="faq-q">How much access do you need? <span class="faq-icon">+</span></button>
+          <div class="faq-a">Read-only access to the codebase is enough to start. No write access. No database credentials. A temporary collaborator invite on a private repo works fine.</div>
         </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" onclick="toggleFaq(this)">
-          <span class="faq-q-text">I'm not technical. Will I understand the report?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-a">
-          <div class="faq-a-inner">Yes. That is the point. The report is written for founders, not developers. The video explains every finding in plain language. The follow-up call is there if something still needs unpacking.</div>
+        <div class="faq-item">
+          <button class="faq-q">I'm not technical. Will I understand the report? <span class="faq-icon">+</span></button>
+          <div class="faq-a">Yes. That is the point. The report is written for founders, not developers. The video explains every finding in plain language. The follow-up call is there if something still needs unpacking.</div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- NOT FOR YOU -->
-  <div class="section">
-    <p class="section-eye">Honest Disclaimer</p>
-    <h2>This is not<br>for everyone.</h2>
-    <ul class="nfy">
-      <li>If your product is not live yet. You do not need an audit. You need to ship first.</li>
-      <li>If nothing is working and you need a full rebuild. That is a different kind of work.</li>
-      <li>If you want someone to write code without thinking about the system. That is not how I work.</li>
-      <li>If you cannot provide read access to the codebase. The audit cannot happen without it.</li>
-    </ul>
-  </div>
+  <!-- DISCLAIMER -->
+  <section id="disclaimer">
+    <div class="container">
+      <div class="label">Honest Disclaimer</div>
+      <h2>This is not<br>for everyone.</h2>
+      <ul class="disclaimer-list">
+        <li><span class="disclaimer-x">×</span>Your product is not live yet — you need to ship first.</li>
+        <li><span class="disclaimer-x">×</span>Nothing is working, and you need a full rebuild — that is different work.</li>
+        <li><span class="disclaimer-x">×</span>You want someone to write code without thinking about the system — that is not how I work.</li>
+        <li><span class="disclaimer-x">×</span>You cannot provide read access to the codebase — the audit cannot happen without it.</li>
+      </ul>
+    </div>
+  </section>
 
   <!-- FINAL CTA -->
-  <div class="final-cta">
-    <h2>Still reading?<br><em>That's the signal.</em></h2>
-    <p>If this page described your system, the conversation is worth having. 30 minutes. No pitch. Just an honest look at whether this is the right next step.</p>
-    <a href="https://calendly.com/adilhussain003/saas-audit-call" class="btn-primary" target="_blank">
-      Book Your Free Discovery Call
-    </a>
-    <div class="final-contact">
-      <a href="mailto:adilhussain003@gmail.com">adilhussain003@gmail.com</a>
-      &nbsp;·&nbsp;
-      <a href="https://www.linkedin.com/in/adilhussain003" target="_blank">linkedin.com/in/adilhussain003</a>
+  <section id="final-cta">
+    <div class="container" style="position:relative; z-index:1;">
+      <div class="label" style="justify-content:center;">Still reading?</div>
+      <h2 style="text-align:center;"><span class="serif-em">That's the signal.</span></h2>
+      <p class="cta-sub">If this page describes your system, the conversation is worth having. 30 minutes. No pitch. Just an honest look at whether this is the right next step.</p>
+      <a href="https://calendly.com/adilhussain003/saas-audit-call" class="btn-outline">Book Your Free Discovery Call</a>
+      <p class="hero-note" style="margin-top:20px;">Currently accepting audits — 2 slots available this month</p>
     </div>
-  </div>
+  </section>
 
   <!-- FOOTER -->
   <footer>
-    <p>© 2026 Adil Hussain</p>
+    <span class="footer-name">© 2026 Adil Hussain</span>
     <div class="footer-links">
-      <a href="https://www.linkedin.com/in/adilhussain003" target="_blank">LinkedIn</a>
       <a href="mailto:adilhussain003@gmail.com">Email</a>
-      <a href="https://calendly.com/adilhussain003/saas-audit-call" target="_blank">Book a Call →</a>
+      <a href="https://www.linkedin.com/in/adilhussain003" target="_blank">LinkedIn</a>
+      <a href="https://calendly.com/adilhussain003/system-audit-call" target="_blank">Book a Call →</a>
     </div>
   </footer>
 
-</div>
+  <script>
+    document.querySelectorAll('.faq-q').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.parentElement;
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+  </script>
 
-<script>
-  function toggleFaq(btn) {
-    const item = btn.closest('.faq-item');
-    const isOpen = item.classList.contains('open');
-    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-    if (!isOpen) item.classList.add('open');
-  }
-</script>
 </body>
 </html>
